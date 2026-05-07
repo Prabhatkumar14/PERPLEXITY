@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Backend URL
-const API_URL = 'https://seekrx-backend.onrender.com';
+const API_URL = 'https://seekrx-backend.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
