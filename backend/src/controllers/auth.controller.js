@@ -95,7 +95,12 @@ export async function login(req, res) {
         username: user.username,
     }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.cookie("token", token);
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: true, // Required for SameSite=None
+        sameSite: 'none',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
 
     res.status(200).json({
         message: "Login successful",
@@ -228,6 +233,8 @@ export async function resendVerificationEmail(req, res) {
 export async function logout(req, res) {
     res.cookie("token", "", {
         httpOnly: true,
+        secure: true,
+        sameSite: 'none',
         expires: new Date(0)
     });
     

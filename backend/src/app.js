@@ -6,7 +6,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: "https://seekrx.vercel.app",
+    origin: process.env.CORS_ORIGIN || "https://seekrx.vercel.app",
     credentials: true
 }));
 

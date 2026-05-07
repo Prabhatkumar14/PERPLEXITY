@@ -4,7 +4,7 @@ import {
   Loader2, Trash2, ChevronDown, Cpu, Paperclip, X, 
   Search, Download, Mic, MicOff, Copy, Check, Terminal, Camera, Volume2, VolumeX, CheckCircle, AlertCircle 
 } from 'lucide-react';
-import { login, register, getMe, logout, getChats, createChat, getMessages, sendMessage, deleteChat, checkGrammar } from './api';
+import { login, register, getMe, logout, getChats, createChat, getMessages, sendMessage, deleteChat, checkGrammar, API_URL } from './api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -309,13 +309,13 @@ function App() {
         formData.append('tutorLevel', tutorLevel);
         formData.append('file', fileToSend);
 
-        response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/message/stream`, {
+        response = await fetch(`${API_URL}/api/message/stream`, {
           method: 'POST',
           body: formData,
           credentials: 'include'
         });
       } else {
-        response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/message/stream`, {
+        response = await fetch(`${API_URL}/api/message/stream`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',

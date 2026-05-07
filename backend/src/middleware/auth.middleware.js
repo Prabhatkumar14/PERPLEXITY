@@ -11,8 +11,9 @@ export const authUser = async (req, res, next) => {
     }
 
     if (!token) {
+        console.log("No token found in request");
         return res.status(401).json({
-            message: "Not authorized, no token",
+            message: "Not authorized, please login first",
             success: false,
         });
     }
@@ -23,8 +24,9 @@ export const authUser = async (req, res, next) => {
         const user = await userModel.findById(decoded.id).select("-password");
 
         if (!user) {
+            console.log("User not found for token id:", decoded.id);
             return res.status(401).json({
-                message: "Not authorized, user not found",
+                message: "Not authorized, user account no longer exists",
                 success: false,
             });
         }
@@ -32,9 +34,9 @@ export const authUser = async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
-        console.error("Auth middleware error:", error);
+        console.error("Auth middleware error:", error.message);
         res.status(401).json({
-            message: "Not authorized, token failed",
+            message: "Session expired, please login again",
             success: false,
             err: error.message
         });

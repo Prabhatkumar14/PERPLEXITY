@@ -1,10 +1,11 @@
 import axios from 'axios';
 
 // Backend URL
-const API_URL = 'https://seekrx-backend.onrender.com/api';
+export const API_URL = import.meta.env.VITE_API_URL || 'https://seekrx-backend.onrender.com';
+const API_BASE = `${API_URL}/api`;
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_BASE,
   withCredentials: true, // Important for sending/receiving cookies
   headers: {
     'Content-Type': 'application/json',
