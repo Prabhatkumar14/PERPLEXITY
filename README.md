@@ -1,4 +1,4 @@
-# SeekrX Pro 🚀
+# SeekrX  🚀
 
 SeekrX is a high-performance, premium AI chatbot and tutor platform built with the MERN stack. It features real-time AI responses, multimodal file support, and an intelligent search grounding system.
 
@@ -51,4 +51,4 @@ npm run dev
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-Built with ❤️ by [Your Name/Handle]
+Built with ❤️ by Prabhat Kumar 
