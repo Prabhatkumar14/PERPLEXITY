@@ -36,7 +36,7 @@ export async function register(req, res) {
                 <p>Hi ${username},</p>
                 <p>Thank you for registering at <strong>SeekrX</strong>. We're excited to have you on board!</p>
                 <p>Please verify your email address by clicking the link below:</p>
-                <a href="http://localhost:3000/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
+                <a href="${process.env.BACKEND_URL || 'https://seekrx-backend.onrender.com'}/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
                 <p>If you did not create an account, please ignore this email.</p>
                 <p>Best regards,<br>The SeekrX Team</p>
         `
@@ -166,7 +166,7 @@ export async function verifyEmail(req, res) {
         const html = `
             <h1>Email Verified Successfully!</h1>
             <p>Your email has been verified. You can now log in to your account.</p>
-            <a href="http://localhost:3000/login">Go to Login</a>
+            <a href="${process.env.CORS_ORIGIN || 'https://seekrx.vercel.app'}/login">Go to Login</a>
         `;
 
         return res.send(html);
@@ -214,7 +214,7 @@ export async function resendVerificationEmail(req, res) {
                     <p>Hi ${user.username},</p>
                     <p>You requested to resend your verification email.</p>
                     <p>Please verify your email address by clicking the link below:</p>
-                    <a href="http://localhost:3000/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
+                    <a href="${process.env.BACKEND_URL || 'https://seekrx-backend.onrender.com'}/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
                     <p>Best regards,<br>The SeekrX Team</p>
             `
         });
