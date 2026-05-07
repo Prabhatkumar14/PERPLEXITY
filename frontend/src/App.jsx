@@ -4,7 +4,7 @@ import {
   Loader2, Trash2, ChevronDown, Cpu, Paperclip, X, 
   Search, Download, Mic, MicOff, Copy, Check, Terminal, Camera, Volume2, VolumeX, CheckCircle, AlertCircle 
 } from 'lucide-react';
-import { login, register, getMe, logout, getChats, createChat, getMessages, sendMessage, deleteChat, checkGrammar, API_URL } from './api';
+import { login, register, getMe, logout, getChats, createChat, getMessages, sendMessage, deleteChat, checkGrammar, resendVerification, API_URL } from './api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -102,6 +102,8 @@ function App() {
   const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
   const [authError, setAuthError] = useState('');
+  const [showResend, setShowResend] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   // Chat State
   const [chats, setChats] = useState([]);
@@ -603,7 +605,27 @@ function App() {
         }
       }
     } catch (err) {
-      setAuthError(err.response?.data?.message || 'Authentication failed');
+      const msg = err.response?.data?.message || 'Authentication failed';
+      setAuthError(msg);
+      if (msg.toLowerCase().includes('verify') || err.response?.data?.err === 'Email not verified') {
+        setShowResend(true);
+      }
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (!email) return;
+    setResendLoading(true);
+    try {
+      const res = await resendVerification(email);
+      if (res.data.success) {
+        setAuthError('Verification email sent! Please check your inbox.');
+        setShowResend(false);
+      }
+    } catch (err) {
+      setAuthError(err.response?.data?.message || 'Failed to resend email');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -640,9 +662,19 @@ function App() {
             {authError && <p className="auth-error">{authError}</p>}
             <button type="submit" className="auth-btn">{isRegister ? 'Register' : 'Login'}</button>
           </form>
-          <button className="auth-switch" onClick={() => { setIsRegister(!isRegister); setAuthError(''); }}>
+          <button className="auth-switch" onClick={() => { setIsRegister(!isRegister); setAuthError(''); setShowResend(false); }}>
             {isRegister ? 'Already have an account? Login' : "Don't have an account? Register"}
           </button>
+          {showResend && !isRegister && (
+            <button 
+              className="resend-btn" 
+              onClick={handleResendEmail} 
+              disabled={resendLoading}
+            >
+              {resendLoading ? <Loader2 size={14} className="spinner" /> : <Send size={14} />}
+              Resend Verification Email
+            </button>
+          )}
         </div>
       </div>
     );
@@ -709,7 +741,9 @@ function App() {
             <Menu size={24} />
           </button>
           <span className="logo-text text-gradient">SeekrX</span>
-          <div style={{ width: '24px' }}></div> {/* Spacer to center title */}
+          <button className="mobile-utility-btn" onClick={handleExportChat}>
+            <Download size={18} />
+          </button>
         </div>
 
         <div className="header-actions">
@@ -811,7 +845,7 @@ function App() {
           )}
         </div>
 
-        <div className="input-area-wrapper" style={{ flexDirection: 'column', alignItems: 'center' }}>
+        <div className="input-area-wrapper">
           
           {/* Model & Persona Selector (Merged for Clean UI) */}
           <div className="model-dropdown-container">
