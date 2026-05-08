@@ -107,6 +107,7 @@ function App() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [otp, setOtp] = useState('');
   const [verifyLoading, setVerifyLoading] = useState(false);
+  const [isAuthProcessing, setIsAuthProcessing] = useState(false);
 
   // Chat State
   const [chats, setChats] = useState([]);
@@ -594,10 +595,14 @@ function App() {
 
   const handleAuth = async (e) => {
     e.preventDefault();
+    console.log("🚀 Starting Auth Process...", { isRegister, email, username });
     setAuthError('');
+    setIsAuthProcessing(true);
     try {
       if (isRegister) {
+        console.log("📝 Registering user...");
         const res = await register(username, email, password);
+        console.log("✅ Registration response:", res.data);
         if (res.data.needsVerification) {
           setIsVerifying(true);
           setAuthError('Registration successful. Please enter the OTP sent to your email.');
@@ -606,13 +611,16 @@ function App() {
           setIsRegister(false);
         }
       } else {
+        console.log("🔑 Logging in...");
         const res = await login(email, password);
+        console.log("✅ Login success");
         if (res.data.success) {
           setUser(res.data.user);
           loadChats();
         }
       }
     } catch (err) {
+      console.error("❌ Auth Error:", err);
       let msg = err.response?.data?.message;
       
       // Handle express-validator errors
@@ -620,13 +628,14 @@ function App() {
         msg = err.response.data.errors[0].msg;
       }
       
-      msg = msg || 'Authentication failed';
+      msg = msg || (err.message === 'Network Error' ? 'Cannot connect to server. Check your internet or backend status.' : 'Authentication failed');
       setAuthError(msg);
       if (msg.toLowerCase().includes('verify') || err.response?.data?.err === 'Email not verified') {
         setShowResend(true);
-        // If login failed due to verification, show OTP input
         setIsVerifying(true);
       }
+    } finally {
+      setIsAuthProcessing(false);
     }
   };
 
@@ -713,8 +722,15 @@ function App() {
               </div>
             )}
             {authError && <p className="auth-error">{authError}</p>}
-            <button type="submit" className="auth-btn" disabled={verifyLoading}>
-              {isVerifying ? (verifyLoading ? 'Verifying...' : 'Verify OTP') : (isRegister ? 'Register' : 'Login')}
+            <button type="submit" className="auth-btn" disabled={isAuthProcessing || verifyLoading}>
+              {isAuthProcessing ? (
+                <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
+                  <Loader2 className="spinner" size={16} />
+                  Processing...
+                </div>
+              ) : (
+                isVerifying ? (verifyLoading ? 'Verifying...' : 'Verify OTP') : (isRegister ? 'Register' : 'Login')
+              )}
             </button>
           </form>
           <button className="auth-switch" onClick={() => { setIsRegister(!isRegister); setIsVerifying(false); setAuthError(''); setShowResend(false); }}>
