@@ -277,6 +277,11 @@ function App() {
     e?.preventDefault();
     if ((!input.trim() && !selectedFile) || isLoading) return;
 
+    // Double-submit prevention
+    if (window.isSubmittingMessage) return;
+    window.isSubmittingMessage = true;
+    setTimeout(() => { window.isSubmittingMessage = false; }, 1000); 
+
     let currentChatId = activeChat?._id;
     
     // Create chat on the fly if none is active
@@ -593,6 +598,13 @@ function App() {
     { label: 'Translate', icon: <User size={14}/>, text: 'Translate my last message to Hindi.' }
   ];
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
   const handleAuth = async (e) => {
     e.preventDefault();
     console.log("🚀 Starting Auth Process...", { isRegister, email, username });
@@ -753,7 +765,7 @@ function App() {
 
   // --- Chat Screen ---
   return (
-    <div className={`app-container ${persona}-mode`}>
+    <div className={`app-container ${persona}-mode`} style={{ height: '100dvh', maxHeight: '100dvh' }}>
       {/* Sidebar */}
       <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">

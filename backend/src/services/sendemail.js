@@ -1,45 +1,34 @@
-import nodemailer from "nodemailer";
+import axios from "axios";
 
-// Create transporter once to reuse connection (Faster)
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  family: 4, // Strictly force IPv4
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false // Fixes certificate issues on Render
+const sendEmail = async ({ to, subject, html }) => {
+  const BREVO_API_KEY = process.env.BREVO_API_KEY;
+
+  if (!BREVO_API_KEY) {
+    console.warn("⚠️ BREVO_API_KEY is missing.");
+    return;
   }
-});
-
-const sendEmail = async ({ to, subject, text, html }) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.error("❌ EMAIL_USER or EMAIL_PASS is missing in .env");
-    throw new Error("Email credentials missing");
-  }
-
-  const mailOptions = {
-    from: `"SeekrX Team" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    text,
-    html
-  };
 
   try {
-    console.log(`📧 Sending email to ${to}...`);
-    const info = await transporter.sendMail(mailOptions);
-    console.log("✅ Email sent:", info.messageId);
-    return info;
+    console.log(`📧 Sending email via Brevo to ${to}...`);
+    const response = await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: { name: "SeekrX", email: process.env.EMAIL_USER || "ankitrajsingh843483@gmail.com" }, 
+        to: [{ email: to }],
+        subject: subject,
+        htmlContent: html,
+      },
+      {
+        headers: {
+          "api-key": BREVO_API_KEY,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log("✅ Email sent via Brevo:", response.data.messageId);
+    return response.data;
   } catch (error) {
-    console.error("❌ Nodemailer Error:", error.message);
-    if (error.message.includes('Invalid login')) {
-      console.error("👉 TIP: Use a 'Google App Password', not your regular Gmail password.");
-    }
-    throw error;
+    console.error("❌ Brevo API Error:", error.response?.data || error.message);
   }
 };
 

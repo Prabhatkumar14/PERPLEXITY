@@ -11,8 +11,8 @@ import sendEmail from "../services/sendemail.js";
 export async function register(req, res) {
     const { username, email, password } = req.body;
 
-    const existingUser = await userModel.findOne({ 
-        $or: [{ email }, { username }] 
+    const existingUser = await userModel.findOne({
+        $or: [{ email }, { username }]
     });
 
     // Helper to generate and save OTP
@@ -28,7 +28,7 @@ export async function register(req, res) {
         if (!existingUser.isVerified) {
             // User exists but not verified, let's update and resend OTP
             existingUser.username = username;
-            existingUser.password = password; 
+            existingUser.password = password;
             const otp = await setupOTP(existingUser);
 
             // Resend email in background for speed
@@ -150,7 +150,7 @@ export async function login(req, res) {
 
     res.cookie("token", token, {
         httpOnly: true,
-        secure: true, // Required for SameSite=None
+        secure: true,
         sameSite: 'none',
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
@@ -302,7 +302,7 @@ export async function verifyOTP(req, res) {
  */
 export async function resendVerificationEmail(req, res) {
     const { email } = req.body;
-    
+
     if (!email) {
         return res.status(400).json({ message: "Email is required", success: false });
     }
@@ -360,7 +360,7 @@ export async function logout(req, res) {
         sameSite: 'none',
         expires: new Date(0)
     });
-    
+
     res.status(200).json({
         message: "Logged out successfully",
         success: true
