@@ -37,3 +37,6 @@ yarn-error.log*
 backend/scratch/
 test-*.js
 backend/test-*.js
+*.test.js
+tests/
+coverage/
