@@ -3,6 +3,10 @@ import nodemailer from "nodemailer";
 // Create transporter once to reuse connection (Faster)
 const transporter = nodemailer.createTransport({
   service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  family: 4, // Force IPv4 to avoid ENETUNREACH on Render
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
