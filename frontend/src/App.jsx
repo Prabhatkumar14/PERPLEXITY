@@ -4,7 +4,7 @@ import {
   Loader2, Trash2, ChevronDown, Cpu, Paperclip, X, 
   Search, Download, Mic, MicOff, Copy, Check, Terminal, Camera, Volume2, VolumeX, CheckCircle, AlertCircle 
 } from 'lucide-react';
-import { login, register, getMe, logout, getChats, createChat, getMessages, sendMessage, deleteChat, checkGrammar, resendVerification, API_URL } from './api';
+import { login, register, getMe, logout, getChats, createChat, getMessages, sendMessage, deleteChat, checkGrammar, resendVerification, verifyOTP, API_URL } from './api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -104,6 +104,9 @@ function App() {
   const [authError, setAuthError] = useState('');
   const [showResend, setShowResend] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [verifyLoading, setVerifyLoading] = useState(false);
 
   // Chat State
   const [chats, setChats] = useState([]);
@@ -594,9 +597,14 @@ function App() {
     setAuthError('');
     try {
       if (isRegister) {
-        await register(username, email, password);
-        setAuthError('Registration successful. Please verify email and login.');
-        setIsRegister(false);
+        const res = await register(username, email, password);
+        if (res.data.needsVerification) {
+          setIsVerifying(true);
+          setAuthError('Registration successful. Please enter the OTP sent to your email.');
+        } else {
+          setAuthError('Registration successful. Please verify email and login.');
+          setIsRegister(false);
+        }
       } else {
         const res = await login(email, password);
         if (res.data.success) {
@@ -609,7 +617,28 @@ function App() {
       setAuthError(msg);
       if (msg.toLowerCase().includes('verify') || err.response?.data?.err === 'Email not verified') {
         setShowResend(true);
+        // If login failed due to verification, show OTP input
+        setIsVerifying(true);
       }
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    if (!otp || !email) return;
+    setVerifyLoading(true);
+    setAuthError('');
+    try {
+      const res = await verifyOTP(email, otp);
+      if (res.data.success) {
+        setAuthError('Email verified successfully! You can now login.');
+        setIsVerifying(false);
+        setIsRegister(false);
+      }
+    } catch (err) {
+      setAuthError(err.response?.data?.message || 'Verification failed');
+    } finally {
+      setVerifyLoading(false);
     }
   };
 
@@ -653,17 +682,36 @@ function App() {
             <h1 className="text-gradient">SeekrX</h1>
             <p>{isRegister ? 'Create an account to start' : 'Welcome back, please login'}</p>
           </div>
-          <form onSubmit={handleAuth} className="auth-form">
-            {isRegister && (
+          <form onSubmit={isVerifying ? handleVerifyOTP : handleAuth} className="auth-form">
+            {isRegister && !isVerifying && (
               <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} required />
             )}
-            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-            <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+            {!isVerifying && (
+              <>
+                <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+                <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
+              </>
+            )}
+            {isVerifying && (
+              <div className="otp-container">
+                <p style={{fontSize: '14px', marginBottom: '10px', color: 'var(--text-muted)'}}>Verification code sent to {email}</p>
+                <input 
+                  type="text" 
+                  placeholder="6-digit OTP" 
+                  value={otp} 
+                  onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))} 
+                  required 
+                  style={{textAlign: 'center', fontSize: '20px', letterSpacing: '4px'}}
+                />
+              </div>
+            )}
             {authError && <p className="auth-error">{authError}</p>}
-            <button type="submit" className="auth-btn">{isRegister ? 'Register' : 'Login'}</button>
+            <button type="submit" className="auth-btn" disabled={verifyLoading}>
+              {isVerifying ? (verifyLoading ? 'Verifying...' : 'Verify OTP') : (isRegister ? 'Register' : 'Login')}
+            </button>
           </form>
-          <button className="auth-switch" onClick={() => { setIsRegister(!isRegister); setAuthError(''); setShowResend(false); }}>
-            {isRegister ? 'Already have an account? Login' : "Don't have an account? Register"}
+          <button className="auth-switch" onClick={() => { setIsRegister(!isRegister); setIsVerifying(false); setAuthError(''); setShowResend(false); }}>
+            {isVerifying ? 'Back to Register' : (isRegister ? 'Already have an account? Login' : "Don't have an account? Register")}
           </button>
           {showResend && !isRegister && (
             <button 

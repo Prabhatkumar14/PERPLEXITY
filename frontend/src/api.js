@@ -18,6 +18,7 @@ export const register = (username, email, password) => api.post('/auth/register'
 export const getMe = () => api.get('/auth/get-me');
 export const logout = () => api.get('/auth/logout');
 export const resendVerification = (email) => api.post('/auth/resend-verification', { email });
+export const verifyOTP = (email, otp) => api.post('/auth/verify-otp', { email, otp });
 
 // --- Chat APIs ---
 export const getChats = () => api.get('/chat');

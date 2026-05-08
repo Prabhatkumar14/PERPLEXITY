@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, verifyEmail, login, getMe, resendVerificationEmail, logout } from "../controllers/auth.controller.js";
+import { register, verifyEmail, verifyOTP, login, getMe, resendVerificationEmail, logout } from "../controllers/auth.controller.js";
 import { registerValidator, loginValidator } from "../validators/auth.validator.js";
 import { authUser } from "../middleware/auth.middleware.js";
 
@@ -19,6 +19,11 @@ authRouter.post("/login", loginValidator, login);
  * @route GET /api/auth/get-me
  */
 authRouter.get('/get-me', authUser, getMe);
+
+/**
+ * @route POST /api/auth/verify-otp
+ */
+authRouter.post('/verify-otp', verifyOTP);
 
 /**
  * @route GET /api/auth/verify-email
