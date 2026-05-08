@@ -613,7 +613,14 @@ function App() {
         }
       }
     } catch (err) {
-      const msg = err.response?.data?.message || 'Authentication failed';
+      let msg = err.response?.data?.message;
+      
+      // Handle express-validator errors
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        msg = err.response.data.errors[0].msg;
+      }
+      
+      msg = msg || 'Authentication failed';
       setAuthError(msg);
       if (msg.toLowerCase().includes('verify') || err.response?.data?.err === 'Email not verified') {
         setShowResend(true);

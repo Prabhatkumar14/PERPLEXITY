@@ -11,7 +11,9 @@ import sendEmail from "../services/sendemail.js";
 export async function register(req, res) {
     const { username, email, password } = req.body;
 
-    const existingUser = await userModel.findOne({ email });
+    const existingUser = await userModel.findOne({ 
+        $or: [{ email }, { username }] 
+    });
 
     // Helper to generate and save OTP
     const setupOTP = async (user) => {
